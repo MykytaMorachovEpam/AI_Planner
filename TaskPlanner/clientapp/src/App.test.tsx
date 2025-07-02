@@ -78,7 +78,7 @@ describe('App', () => {
   it('shows error on fetch failure', async () => {
     (api.getTasks as jest.Mock).mockRejectedValueOnce(new Error('fail'));
     render(<App />);
-    expect(await screen.findByText('fail')).toBeInTheDocument();
+    expect(await screen.findByText((content) => content.includes('Error') && content.includes('fail'))).toBeInTheDocument();
   });
 
   it('shows error on add failure', async () => {
@@ -87,6 +87,35 @@ describe('App', () => {
     await screen.findByText('Test Task');
     userEvent.type(screen.getByPlaceholderText('Task name'), 'New Task');
     userEvent.click(screen.getByRole('button', { name: /add task/i }));
-    await waitFor(() => expect(screen.getByText('fail')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText((content) => content.includes('Error') && content.includes('fail'))).toBeInTheDocument());
+  });
+});
+
+describe('Localization and Language Switcher', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.clearAllMocks();
+    (api.getTasks as jest.Mock).mockResolvedValue([...mockTasks]);
+  });
+
+  it('renders in English by default', async () => {
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Task Planner' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add task/i })).toBeInTheDocument();
+  });
+
+  it('switches to Ukrainian when selected', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Task Planner' });
+    userEvent.selectOptions(screen.getByLabelText('Select language'), 'ua');
+    expect(await screen.findByRole('heading', { name: 'Планувальник Завдань' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Додати завдання/i })).toBeInTheDocument();
+  });
+
+  it('persists selected language in localStorage', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Task Planner' });
+    userEvent.selectOptions(screen.getByLabelText('Select language'), 'ua');
+    await waitFor(() => expect(localStorage.getItem('locale')).toBe('ua'));
   });
 });
