@@ -1,0 +1,12 @@
+{
+  "title": "Task Planner",
+  "taskName": "Task name",
+  "description": "Description",
+  "dueDate": "Due date",
+  "addTask": "Add Task",
+  "delete": "Delete",
+  "loading": "Loading...",
+  "error": "Error",
+  "noTasks": "No tasks yet.",
+  "completed": "Completed"
+} 
