@@ -63,5 +63,12 @@ namespace TaskPlanner.Data
         {
             SaveTasks();
         }
+
+        // For testing purposes
+        public void ClearTasks()
+        {
+            _tasks.Clear();
+            SaveTasks();
+        }
     }
 } 

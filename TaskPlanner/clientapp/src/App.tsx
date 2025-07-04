@@ -4,9 +4,11 @@ import {
   createTask,
   deleteTask,
   toggleComplete,
+  updateTaskPriority,
   TaskItem,
 } from './api/taskApi';
 import { IntlProvider, FormattedMessage, useIntl } from 'react-intl';
+import { PrioritySelect } from './components/PrioritySelect';
 import enMessages from './locales/en/translation.json';
 import uaMessages from './locales/ua/translation.json';
 
@@ -15,7 +17,13 @@ const messages: Record<string, Record<string, string>> = {
   ua: uaMessages,
 };
 
-const emptyTask = { name: '', description: '', dueDate: '', isCompleted: false };
+const emptyTask = {
+  name: '',
+  description: '',
+  dueDate: '',
+  isCompleted: false,
+  priority: 'Medium' as TaskItem['priority'],
+};
 
 function TaskPlannerApp() {
   const intl = useIntl();
@@ -23,11 +31,12 @@ function TaskPlannerApp() {
   const [form, setForm] = useState<typeof emptyTask>(emptyTask);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [priorityFilter, setPriorityFilter] = useState<TaskItem['priority'] | ''>('');
 
   const loadTasks = async () => {
     setLoading(true);
     try {
-      setTasks(await getTasks());
+      setTasks(await getTasks(priorityFilter || undefined));
       setError(null);
     } catch (e: any) {
       setError(e.message);
@@ -37,7 +46,7 @@ function TaskPlannerApp() {
 
   useEffect(() => {
     loadTasks();
-  }, []);
+  }, [priorityFilter]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -64,6 +73,15 @@ function TaskPlannerApp() {
     loadTasks();
   };
 
+  const handlePriorityChange = async (id: string, priority: TaskItem['priority']) => {
+    try {
+      await updateTaskPriority(id, priority);
+      loadTasks();
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', fontFamily: 'sans-serif' }}>
       <h1><FormattedMessage id="title" /></h1>
@@ -83,16 +101,42 @@ function TaskPlannerApp() {
           placeholder={intl.formatMessage({ id: 'description' })}
           style={{ width: '100%', marginBottom: 8 }}
         />
-        <input
-          name="dueDate"
-          type="date"
-          value={form.dueDate}
-          onChange={handleChange}
-          aria-label={intl.formatMessage({ id: 'dueDate' })}
-          style={{ width: '100%', marginBottom: 8 }}
-        />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <input
+            name="dueDate"
+            type="date"
+            value={form.dueDate}
+            onChange={handleChange}
+            aria-label={intl.formatMessage({ id: 'dueDate' })}
+            style={{ flex: 1 }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label><FormattedMessage id="priority" />:</label>
+            <PrioritySelect
+              value={form.priority}
+              onChange={(priority) => setForm({ ...form, priority })}
+            />
+          </div>
+        </div>
         <button type="submit"><FormattedMessage id="addTask" /></button>
       </form>
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ marginRight: 8 }}><FormattedMessage id="priority.filter" />:</label>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value as TaskItem['priority'] | '')}
+          style={{ padding: '4px 8px' }}
+          aria-label={intl.formatMessage({ id: 'priority.filter' })}
+        >
+          <option value=""><FormattedMessage id="priority.all" /></option>
+          <option value="Low">{intl.formatMessage({ id: 'priority.low' })}</option>
+          <option value="Medium">{intl.formatMessage({ id: 'priority.medium' })}</option>
+          <option value="High">{intl.formatMessage({ id: 'priority.high' })}</option>
+          <option value="Critical">{intl.formatMessage({ id: 'priority.critical' })}</option>
+        </select>
+      </div>
+
       {error && <div style={{ color: 'red' }}><FormattedMessage id="error" />: {error}</div>}
       {loading ? (
         <div><FormattedMessage id="loading" /></div>
@@ -102,19 +146,30 @@ function TaskPlannerApp() {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {tasks.map((task) => (
             <li key={task.id} style={{ marginBottom: 12, border: '1px solid #ccc', padding: 12, borderRadius: 4 }}>
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <input
                   type="checkbox"
                   checked={task.isCompleted}
                   onChange={() => handleToggle(task.id)}
-                  style={{ marginRight: 8 }}
                   aria-label={intl.formatMessage({ id: 'completed' })}
                 />
-                <strong style={{ textDecoration: task.isCompleted ? 'line-through' : undefined }}>{task.name}</strong>
-                {task.dueDate && <span style={{ marginLeft: 8, color: '#888' }}><FormattedMessage id="dueDate" />: {task.dueDate}</span>}
+                <strong style={{ textDecoration: task.isCompleted ? 'line-through' : undefined, flex: 1 }}>
+                  {task.name}
+                </strong>
+                <PrioritySelect
+                  value={task.priority}
+                  onChange={(priority) => handlePriorityChange(task.id, priority)}
+                />
               </div>
-              <div>{task.description}</div>
-              <button onClick={() => handleDelete(task.id)} style={{ marginTop: 8 }}><FormattedMessage id="delete" /></button>
+              <div style={{ marginBottom: 4 }}>{task.description}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {task.dueDate && (
+                  <span style={{ color: '#888' }}>
+                    <FormattedMessage id="dueDate" />: {task.dueDate}
+                  </span>
+                )}
+                <button onClick={() => handleDelete(task.id)}><FormattedMessage id="delete" /></button>
+              </div>
             </li>
           ))}
         </ul>

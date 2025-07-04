@@ -8,5 +8,12 @@
   "loading": "Завантаження...",
   "error": "Помилка",
   "noTasks": "Завдань ще немає.",
-  "completed": "Виконано"
+  "completed": "Виконано",
+  "priority": "Пріоритет",
+  "priority.low": "Низький",
+  "priority.medium": "Середній",
+  "priority.high": "Високий",
+  "priority.critical": "Критичний",
+  "priority.filter": "Фільтр за пріоритетом",
+  "priority.all": "Всі пріоритети"
 } 

@@ -8,5 +8,12 @@
   "loading": "Loading...",
   "error": "Error",
   "noTasks": "No tasks yet.",
-  "completed": "Completed"
+  "completed": "Completed",
+  "priority": "Priority",
+  "priority.low": "Low",
+  "priority.medium": "Medium",
+  "priority.high": "High",
+  "priority.critical": "Critical",
+  "priority.filter": "Filter by priority",
+  "priority.all": "All priorities"
 } 
