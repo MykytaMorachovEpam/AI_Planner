@@ -93,6 +93,7 @@ describe('App', () => {
 
   it('can update task priority', async () => {
     render(<App />);
+<<<<<<< HEAD
     await screen.findByText('Test Task');
     const testTaskRow = screen.getByText('Test Task').closest('li');
     const prioritySelect = within(testTaskRow!).getByLabelText(/priority/i);
@@ -116,12 +117,16 @@ describe('App', () => {
     (api.getTasks as jest.Mock).mockRejectedValueOnce(new Error('Failed to load tasks'));
     render(<App />);
     expect(await screen.findByText((content) => content.includes('Failed to load tasks'))).toBeInTheDocument();
+=======
+    expect(await screen.findByText((content) => content.includes('Error') && content.includes('fail'))).toBeInTheDocument();
+>>>>>>> 7984ed8 (Add README with project structure and instructions. Add and fix tests for full React app coverage, including localization and language switcher.)
   });
 
   it('shows error on add failure', async () => {
     (api.createTask as jest.Mock).mockRejectedValueOnce(new Error('Failed to create task'));
     render(<App />);
     await screen.findByText('Test Task');
+<<<<<<< HEAD
     await userEvent.type(screen.getByPlaceholderText('Task name'), 'New Task');
     await userEvent.click(screen.getByRole('button', { name: /add task/i }));
     expect(await screen.findByText((content) => content.includes('Failed to create task'))).toBeInTheDocument();
@@ -291,6 +296,40 @@ describe('App', () => {
       
       expect(await screen.findByText((content) => content.includes('Failed to create task'))).toBeInTheDocument();
     });
+=======
+    userEvent.type(screen.getByPlaceholderText('Task name'), 'New Task');
+    userEvent.click(screen.getByRole('button', { name: /add task/i }));
+    await waitFor(() => expect(screen.getByText((content) => content.includes('Error') && content.includes('fail'))).toBeInTheDocument());
+  });
+});
+
+describe('Localization and Language Switcher', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.clearAllMocks();
+    (api.getTasks as jest.Mock).mockResolvedValue([...mockTasks]);
+  });
+
+  it('renders in English by default', async () => {
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Task Planner' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add task/i })).toBeInTheDocument();
+  });
+
+  it('switches to Ukrainian when selected', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Task Planner' });
+    userEvent.selectOptions(screen.getByLabelText('Select language'), 'ua');
+    expect(await screen.findByRole('heading', { name: 'Планувальник Завдань' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Додати завдання/i })).toBeInTheDocument();
+  });
+
+  it('persists selected language in localStorage', async () => {
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Task Planner' });
+    userEvent.selectOptions(screen.getByLabelText('Select language'), 'ua');
+    await waitFor(() => expect(localStorage.getItem('locale')).toBe('ua'));
+>>>>>>> 7984ed8 (Add README with project structure and instructions. Add and fix tests for full React app coverage, including localization and language switcher.)
   });
 
   describe('Localization and Language Switcher', () => {
