@@ -50,10 +50,29 @@ namespace TaskPlanner.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(TaskItem task)
+        public IActionResult Create(CreateTaskRequest request)
         {
+            var task = new TaskItem
+            {
+                Name = request.Name,
+                Description = request.Description,
+                DueDate = request.DueDate,
+                IsCompleted = request.IsCompleted,
+                Priority = ParsePriority(request.Priority)
+            };
+            
             _repository.Add(task);
             return CreatedAtAction(nameof(Get), new { id = task.Id }, task);
+        }
+
+        private TaskPriority ParsePriority(string? priorityString)
+        {
+            if (string.IsNullOrEmpty(priorityString))
+                return TaskPriority.Medium;
+                
+            return Enum.TryParse<TaskPriority>(priorityString, true, out var priority) 
+                ? priority 
+                : TaskPriority.Medium;
         }
 
         [HttpPut("{id}")]
@@ -85,5 +104,35 @@ namespace TaskPlanner.Controllers
             _repository.ToggleComplete(id);
             return NoContent();
         }
+
+        [HttpPut("{id}/priority")]
+        public IActionResult UpdatePriority(Guid id, [FromBody] PriorityUpdateRequest request)
+        {
+            var task = _repository.GetAll().FirstOrDefault(t => t.Id == id);
+            if (task == null) return NotFound();
+            
+            if (Enum.TryParse<TaskPriority>(request.Priority, true, out var priority))
+            {
+                task.Priority = priority;
+                _repository.Save();
+                return NoContent();
+            }
+            
+            return BadRequest("Invalid priority value");
+        }
+    }
+
+    public class PriorityUpdateRequest
+    {
+        public string Priority { get; set; } = string.Empty;
+    }
+
+    public class CreateTaskRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime? DueDate { get; set; }
+        public bool IsCompleted { get; set; }
+        public string? Priority { get; set; }
     }
 } 

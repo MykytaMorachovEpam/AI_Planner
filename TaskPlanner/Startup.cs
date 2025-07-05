@@ -23,7 +23,11 @@ namespace TaskPlanner
             services.AddRazorPages()
                 .AddViewLocalization()
                 .AddDataAnnotationsLocalization();
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                });
             services.AddSingleton<TaskRepository>();
             services.AddLocalization(options => options.ResourcesPath = "Resources");
         }
