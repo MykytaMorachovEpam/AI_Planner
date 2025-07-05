@@ -4,12 +4,14 @@ export interface TaskItem {
   description: string;
   dueDate: string | null;
   isCompleted: boolean;
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
 }
 
 const API_BASE = '/api/tasks';
 
-export async function getTasks(): Promise<TaskItem[]> {
-  const res = await fetch(API_BASE);
+export async function getTasks(priority?: TaskItem['priority']): Promise<TaskItem[]> {
+  const url = priority ? `${API_BASE}?priority=${priority}` : API_BASE;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch tasks');
   return res.json();
 }
@@ -47,4 +49,13 @@ export async function deleteTask(id: string): Promise<void> {
 export async function toggleComplete(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/${id}/toggle-complete`, { method: 'POST' });
   if (!res.ok) throw new Error('Failed to toggle complete');
+}
+
+export async function updateTaskPriority(id: string, priority: TaskItem['priority']): Promise<void> {
+  const res = await fetch(`${API_BASE}/${id}/priority`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priority }),
+  });
+  if (!res.ok) throw new Error('Failed to update task priority');
 } 

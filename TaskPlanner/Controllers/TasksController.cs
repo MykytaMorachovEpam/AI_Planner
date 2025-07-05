@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskPlanner.Data;
 using TaskPlanner.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TaskPlanner.Controllers
 {
@@ -15,7 +17,29 @@ namespace TaskPlanner.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<TaskItem>> GetAll() => _repository.GetAll();
+        public ActionResult<IEnumerable<TaskItem>> GetAll(
+            [FromQuery] string? priority = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] string? order = null)
+        {
+            var tasks = _repository.GetAll();
+
+            // Apply priority filter
+            if (!string.IsNullOrEmpty(priority) && Enum.TryParse<TaskPriority>(priority, true, out var priorityEnum))
+            {
+                tasks = tasks.Where(t => t.Priority == priorityEnum).ToList();
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrEmpty(sortBy) && sortBy.Equals("priority", StringComparison.OrdinalIgnoreCase))
+            {
+                tasks = (order?.ToLower() == "desc")
+                    ? tasks.OrderByDescending(t => t.Priority).ToList()
+                    : tasks.OrderBy(t => t.Priority).ToList();
+            }
+
+            return tasks;
+        }
 
         [HttpGet("{id}")]
         public ActionResult<TaskItem> Get(Guid id)
@@ -37,10 +61,13 @@ namespace TaskPlanner.Controllers
         {
             var task = _repository.GetAll().FirstOrDefault(t => t.Id == id);
             if (task == null) return NotFound();
+            
             task.Name = updated.Name;
             task.Description = updated.Description;
             task.DueDate = updated.DueDate;
             task.IsCompleted = updated.IsCompleted;
+            task.Priority = updated.Priority;
+            
             _repository.Save();
             return NoContent();
         }

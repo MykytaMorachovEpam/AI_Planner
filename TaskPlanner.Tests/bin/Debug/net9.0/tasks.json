@@ -1,1 +1,1 @@
-[{"Id":"be3d8057-9bf3-4014-9fab-13b7eee7a5a7","Name":"Updated","Description":"Desc","DueDate":null,"IsCompleted":false},{"Id":"e7793d28-fa8a-4d49-abb7-95989069b6aa","Name":"Test","Description":"Desc","DueDate":null,"IsCompleted":false},{"Id":"ba5a1946-2c60-4786-a832-a32290c10c43","Name":"Toggle","Description":"Desc","DueDate":null,"IsCompleted":true}]
+[{"Id":"87867d01-1a9a-48cf-a7d1-d3a938d365b6","Name":"Update Priority","Description":"Test Priority Update","DueDate":null,"IsCompleted":false,"Priority":3}]
