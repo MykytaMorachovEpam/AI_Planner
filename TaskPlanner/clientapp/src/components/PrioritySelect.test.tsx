@@ -6,6 +6,7 @@ import { PrioritySelect } from './PrioritySelect';
 import { TaskItem } from '../api/taskApi';
 
 const messages = {
+  'priority': 'Priority',
   'priority.low': 'Low',
   'priority.medium': 'Medium',
   'priority.high': 'High',

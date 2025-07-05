@@ -1,10 +1,12 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace TaskPlanner.Models
 {
     /// <summary>
     /// Represents the priority level of a task.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TaskPriority
     {
         /// <summary>
